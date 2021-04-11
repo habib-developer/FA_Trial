@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.EquivalencyExpression;
 using FA.Core.Domain;
 using FA.Web.Models;
 using System;
@@ -12,9 +13,13 @@ namespace FA.Web.Infrastructure
     {
         public AutomappingProfile()
         {
+
             CreateMap<Freelancer, FreelancerVM>();
-            CreateMap<ProjectVM, ProjectVM>();
-            CreateMap<Availability, AvailabilityVM>();
+            CreateMap<FreelancerVM, Freelancer>();
+            CreateMap<Project, ProjectVM>();
+            CreateMap<ProjectVM, Project>();
+            CreateMap<Availability, AvailabilityVM>().EqualityComparison((odto,o)=> odto.Id==o.Id);
+            CreateMap<AvailabilityVM, Availability>().EqualityComparison((odto,o)=> odto.Id==o.Id);
         }
     }
 }

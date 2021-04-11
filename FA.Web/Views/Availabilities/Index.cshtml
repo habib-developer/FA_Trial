@@ -1,0 +1,87 @@
+﻿@using Syncfusion.EJ2
+
+@{
+    ViewData["Title"] = "Index";
+    var availabilityTypes = Html.GetEnumSelectList(typeof(FA.Core.Domain.AvailabilityType)).ToList();
+}
+<!-- Syncfusion Essential JS 2 Styles -->
+<link rel="stylesheet" href="https://cdn.syncfusion.com/ej2/material.css" />
+
+<!-- Syncfusion Essential JS 2 Scripts -->
+<script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>
+<div class="card">
+    <div class="card-header">
+        <label>Freelancer: </label>@Html.DropDownList("Freelancers",null,new{@class="form-control",id="freelancerDropDown"})
+    </div>
+    <div class="card-body">
+        <div class="control-section">
+            <div class="schedule-wrapper">
+                <ejs-schedule id="schedule" width="100%" height="280px" currentView="TimelineYear">
+                    <e-schedule-views>
+                        <e-schedule-view option="TimelineYear" displayName="Horizontal Timeline Year" isSelected="true"></e-schedule-view>
+                    </e-schedule-views>
+
+                    <e-schedule-eventsettings dataSource="@ViewBag.datasource">
+                    </e-schedule-eventsettings>
+                </ejs-schedule>
+            </div>
+        </div>
+        <hr />
+        <div class="control-section">
+
+            <ejs-grid id="Grid" gridLines="Vertical" toolbar="@(new List<string>() { "Add", "Edit", "Delete", "Update", "Cancel" })" allowPaging="false">
+            <e-grid-editSettings allowAdding="true" allowDeleting="true" allowEditing="true" mode="Dialog"></e-grid-editSettings>
+            <e-data-manager url="/Availabilities/List" crossdomain="true" insertUrl="/Availabilities/Insert?freelancerId=@ViewBag.FreelancerId" updateUrl="/Availabilities/Update" removeUrl="/Availabilities/Delete"  adaptor="UrlAdaptor"></e-data-manager>
+            <e-grid-columns>
+                    <e-grid-column field="id" headerText="Id" visible="false" isPrimaryKey="true" textAlign="Right" width="120"></e-grid-column>
+                    <e-grid-column field="startDate" headerText="Start Date" editType="datepickeredit" validationRules="@(new { required=true})" format="dd-MMM-yyyy" width="150"></e-grid-column>
+                    <e-grid-column field="endDate" headerText="End Date" editType="datepickeredit" validationRules="@(new { required=true})" format="dd-MMM-yyyy" width="130"></e-grid-column>
+                    <e-grid-column field="type" headerText="Type" template="#typeTemplate" foreignKeyValue="Text" foreignKeyField="Value" dataSource="availabilityTypes" editType="dropdownedit" validationRules="@(new { required=true})" width="120"></e-grid-column>
+                    <e-grid-column field="projectId" foreignKeyValue="Title" foreignKeyField="Id" dataSource="ViewBag.Projects"  editType="dropdownedit" headerText="Project" validationRules="@(new { required=true})" width="140"></e-grid-column>
+                    <e-grid-column field="hoursPerWeek" headerText="Hours Per Week" editType="numericedit" validationRules="@(new { required=true, number=true})" width="150"></e-grid-column>
+                    <e-grid-column field="hoursPerDay" headerText="Hours Per Day" allowEditing="false" template="#hoursPerDayTemplate" width="150"></e-grid-column>
+                    <e-grid-column field="totalHours" headerText="Total Hours" template="#totalHoursTemplate" allowEditing="false" width="150"></e-grid-column>
+                    <e-grid-column field="createdOn" headerText="Created" allowEditing="false" format="dd-MMM-yyyy hh:mm" width="150"></e-grid-column>
+                    <e-grid-column field="updatedOn" headerText="Updated" allowEditing="false" format="dd-MMM-yyyy hh:mm" width="150"></e-grid-column>
+
+                </e-grid-columns>
+            </ejs-grid>
+            <script type="text/x-jsrender" id="typeTemplate">
+                <span style="color:white" class="badge ${typeColor(typeString)}">${typeString}</span>
+            </script>
+            <script type="text/x-jsrender" id="totalHoursTemplate">
+                <span style="display:${(typeString==='Booked'?'inline':'none')}">${totalHours}</span>
+            </script>
+            <script type="text/x-jsrender" id="hoursPerDayTemplate">
+                <span style="display:${(typeString==='Booked'?'inline':'none')}">${hoursPerDay}</span>
+            </script>
+
+            </div>
+            </div>
+            </div>
+
+
+            @section Scripts{
+            <script type="text/javascript">
+                function typeColor(type)
+                {
+                    if(type==='NotAvailable')
+                        return 'bg-danger';
+                    else if(type==='Available')
+                        return 'bg-success';
+                    else
+                        return 'bg-primary';
+                }
+                $(document).ready(function(){
+                    $('#freelancerDropDown').change(function(e){
+                        var id=$(this).val();
+                        window.location.href="/Availabilities/Index?freelancerId="+id;
+                    });
+                    
+                });
+            </script>
+            <!-- Syncfusion Essential JS 2 ScriptManager -->
+
+            <ejs-scripts></ejs-scripts>
+
+            }

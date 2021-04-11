@@ -17,10 +17,13 @@ namespace FA.Web.Models
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public AvailabilityType Type { get; set; }
-        public int HoursPerWeek { get; set; }
-        public DateTime CreatedOn { get; set; }
+        public string TypeString { get; set; }
+        public double HoursPerWeek { get; set; }
+        public double? HoursPerDay { get; set; }
+        public double? TotalHours { get; set; }
+        public DateTime? CreatedOn { get; set; }
         public string CreatedBy { get; set; }
-        public DateTime UpdatedOn { get; set; }
+        public DateTime? UpdatedOn { get; set; }
         public string UpdatedBy { get; set; }
     }
 }

@@ -1,8 +1,13 @@
+using AutoMapper.EquivalencyExpression;
+using FA.Core.Domain;
+using FA.Core.Infrastructure;
 using FA.Core.Services;
 using FA.Data;
 using FA.Services;
+using FA.Web.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
@@ -36,14 +41,21 @@ namespace FA.Web
 
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-            
+
             //TODO:Register app services
+            services.AddTransient<IAsyncRepository<Project>, EfAsyncRepository<Project>>();
+            services.AddTransient<IAsyncRepository<Freelancer>, EfAsyncRepository<Freelancer>>();
+            services.AddTransient<IAsyncRepository<Availability>, EfAsyncRepository<Availability>>();
             services.AddTransient<IProjectService, ProjectService>();
             services.AddTransient<IFreelancerService, FreelancerService>();
             services.AddTransient<IAvailabilityService, AvailabilityService>();
             
             //TODO:Setup Automapper
-            services.AddAutoMapper(typeof(Startup));
+            services.AddAutoMapper(e =>
+            {
+                e.AddProfile(new AutomappingProfile());
+                e.AddCollectionMappers();
+            });
             services.AddControllersWithViews();
         }
 
@@ -61,6 +73,8 @@ namespace FA.Web
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            //Its important the rewind us added before UseMvc
+            app.Use(next => context => { context.Request.EnableBuffering(); return next(context); });
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
