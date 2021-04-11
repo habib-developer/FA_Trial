@@ -36,7 +36,7 @@
                     <e-grid-column field="id" headerText="Id" visible="false" isPrimaryKey="true" textAlign="Right" width="120"></e-grid-column>
                     <e-grid-column field="startDate" headerText="Start Date" editType="datepickeredit" validationRules="@(new { required=true})" format="dd-MMM-yyyy" width="150"></e-grid-column>
                     <e-grid-column field="endDate" headerText="End Date" editType="datepickeredit" validationRules="@(new { required=true})" format="dd-MMM-yyyy" width="130"></e-grid-column>
-                    <e-grid-column field="type" headerText="Type" template="#typeTemplate" foreignKeyValue="Text" foreignKeyField="Value" dataSource="availabilityTypes" editType="dropdownedit" validationRules="@(new { required=true})" width="120"></e-grid-column>
+                    <e-grid-column field="typeString" headerText="Type" template="#typeTemplate" foreignKeyValue="Text" foreignKeyField="Text" dataSource="availabilityTypes" editType="dropdownedit" validationRules="@(new { required=true})" width="120"></e-grid-column>
                     <e-grid-column field="projectId" foreignKeyValue="Title" foreignKeyField="Id" dataSource="ViewBag.Projects"  editType="dropdownedit" headerText="Project" validationRules="@(new { required=true})" width="140"></e-grid-column>
                     <e-grid-column field="hoursPerWeek" headerText="Hours Per Week" editType="numericedit" validationRules="@(new { required=true, number=true})" width="150"></e-grid-column>
                     <e-grid-column field="hoursPerDay" headerText="Hours Per Day" allowEditing="false" template="#hoursPerDayTemplate" width="150"></e-grid-column>

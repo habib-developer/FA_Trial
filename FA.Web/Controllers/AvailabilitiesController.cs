@@ -56,23 +56,7 @@ namespace FA.Web.Controllers
             }
             List<ProjectVM> projects = _mapper.Map<List<ProjectVM>>(await _projectService.GetAllAsync());
             List<Availability> availabilities = await _availabilityService.GetAvailabilitiesByFreelancerIdAsync(freelancerId);
-            List<AvailabilityVM> availabilitiesVM = availabilities.Select(e => new AvailabilityVM()
-            {
-                Id = e.Id,
-                StartDate = e.StartDate,
-                EndDate = e.EndDate,
-                HoursPerWeek = e.HoursPerWeek,
-                HoursPerDay=(int)(e.HoursPerWeek/5),
-                CreatedOn=e.CreatedOn,
-                UpdatedOn=e.UpdatedOn,
-                Project=_mapper.Map<ProjectVM>(e.Project),
-                Type=e.Type,
-                TotalHours=((e.EndDate-e.StartDate).TotalDays * (e.HoursPerWeek/5)),
-                Freelancer=_mapper.Map<FreelancerVM>(e.Freelancer),
-                FreelancerId=e.FreelancerId,
-                ProjectId=e.ProjectId,
-                UpdatedBy=e.UpdatedBy
-            }).ToList();
+            var availabilitiesVM = PrepareAvailabilityVM(availabilities);
             ViewBag.Freelancers = new SelectList(freelancers,"Id","Name",freelancerId);
             ViewBag.FreelancerId = freelancerId;
             ViewBag.Projects = projects;
@@ -86,24 +70,7 @@ namespace FA.Web.Controllers
 
             List<Freelancer> freelancers = await _freelancerService.GetAllAsync();
             List<Availability> availabilities = await _availabilityService.GetAvailabilitiesByFreelancerIdAsync(Guid.Empty);
-            List<AvailabilityVM> availabilitiesVM = availabilities.Select(e => new AvailabilityVM()
-            {
-                Id = e.Id,
-                StartDate = e.StartDate,
-                EndDate = e.EndDate,
-                HoursPerWeek = e.HoursPerWeek,
-                HoursPerDay = (int)(e.HoursPerWeek / 5),
-                CreatedOn = e.CreatedOn,
-                UpdatedOn = e.UpdatedOn,
-                Project = _mapper.Map<ProjectVM>(e.Project),
-                Type = e.Type,
-                TypeString=e.Type.ToString(),
-                TotalHours = ((e.EndDate - e.StartDate).TotalDays * (e.HoursPerWeek / 5)),
-                Freelancer = _mapper.Map<FreelancerVM>(e.Freelancer),
-                FreelancerId = e.FreelancerId,
-                ProjectId = e.ProjectId,
-                UpdatedBy = e.UpdatedBy
-            }).ToList();
+            List<AvailabilityVM> availabilitiesVM = PrepareAvailabilityVM(availabilities);
             return Json(new { result = availabilitiesVM, count = availabilitiesVM.Count });
         }
         private List<EventsData> generateEvents(List<AvailabilityVM> availabilities)
@@ -126,16 +93,18 @@ namespace FA.Web.Controllers
         public async Task<IActionResult> Update()
         {
             string jsonData = await new StreamReader(Request.Body).ReadToEndAsync();
-            var entity = _mapper.Map<Availability>(JsonConvert.DeserializeObject<InserRequest>(jsonData).value);
+            var entity = _mapper.Map<Availability>(JsonConvert.DeserializeObject<InserUpdateRequest>(jsonData).value);
             var availability = await _availabilityService.GetAvailabilityById(entity.Id);
             var userId = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            entity.FreelancerId = availability.FreelancerId;
-            entity.CreatedOn = availability.CreatedOn;
-            entity.CreatedBy = availability.CreatedBy;
-            entity.UpdatedBy = userId;
-            entity.UpdatedOn = DateTime.UtcNow;
-            await _availabilityService.UpdateAsync(entity);
-            var data = _mapper.Map<List<AvailabilityVM>>(await _availabilityService.GetAvailabilitiesByFreelancerIdAsync(availability.FreelancerId));
+            availability.HoursPerWeek = entity.HoursPerWeek;
+            availability.ProjectId = entity.ProjectId;
+            availability.Type = entity.Type;
+            availability.StartDate = entity.StartDate;
+            availability.EndDate = entity.EndDate;
+            availability.UpdatedBy = userId;
+            availability.UpdatedOn = DateTime.UtcNow;
+            await _availabilityService.UpdateAsync(availability);
+            var data = PrepareAvailabilityVM(await _availabilityService.GetAvailabilitiesByFreelancerIdAsync(availability.FreelancerId));
             return Json(new { result = data, count = data.Count });
         }
         [HttpPost]
@@ -144,12 +113,12 @@ namespace FA.Web.Controllers
                
             var userId = this.User.FindFirst(ClaimTypes.NameIdentifier).Value;
             string jsonData = await new StreamReader(Request.Body).ReadToEndAsync();
-            var entity = _mapper.Map<Availability>(JsonConvert.DeserializeObject<InserRequest>(jsonData).value);
+            var entity = _mapper.Map<Availability>(JsonConvert.DeserializeObject<InserUpdateRequest>(jsonData).value);
             entity.FreelancerId = freelancerId;
             entity.CreatedBy = entity.UpdatedBy = userId;
             entity.CreatedOn = entity.UpdatedOn = DateTime.UtcNow;
             await _availabilityService.AddAsync(entity);
-            var data = _mapper.Map<List<AvailabilityVM>>(await _availabilityService.GetAvailabilitiesByFreelancerIdAsync(freelancerId));
+            var data = PrepareAvailabilityVM(await _availabilityService.GetAvailabilitiesByFreelancerIdAsync(freelancerId));
             return Json(new { result = data, count = data.Count });
         }
         
@@ -158,16 +127,33 @@ namespace FA.Web.Controllers
             Availability entity= await _availabilityService.GetAvailabilityById(e.Key);
             var freelancerId = entity.FreelancerId;
             await _availabilityService.DeleteAsync(entity);
-            var data = _mapper.Map<List<AvailabilityVM>>(await _availabilityService.GetAvailabilitiesByFreelancerIdAsync(freelancerId));
+            var data = PrepareAvailabilityVM(await _availabilityService.GetAvailabilitiesByFreelancerIdAsync(freelancerId));
             return Json(new { result = data, count = data.Count });
         }
-
-        private bool AvailabilityExists(Guid id)
+        private List<AvailabilityVM> PrepareAvailabilityVM(List<Availability> data)
         {
-            return _context.Availabilities.Any(e => e.Id == id);
+            List<AvailabilityVM> availabilitiesVM = data.Select(e => new AvailabilityVM()
+            {
+                Id = e.Id,
+                StartDate = e.StartDate,
+                EndDate = e.EndDate,
+                HoursPerWeek = e.HoursPerWeek,
+                HoursPerDay = (int)(e.HoursPerWeek / 5),
+                CreatedOn = e.CreatedOn,
+                UpdatedOn = e.UpdatedOn,
+                Project = _mapper.Map<ProjectVM>(e.Project),
+                Type = e.Type,
+                TypeString = e.Type.ToString(),
+                TotalHours = ((e.EndDate - e.StartDate).TotalDays * (e.HoursPerWeek / 5)),
+                Freelancer = _mapper.Map<FreelancerVM>(e.Freelancer),
+                FreelancerId = e.FreelancerId,
+                ProjectId = e.ProjectId,
+                UpdatedBy = e.UpdatedBy
+            }).ToList();
+            return availabilitiesVM;
         }
     }
-    public class InserRequest
+    public class InserUpdateRequest
     {
         public string action { get; set; }
         public AvailabilityVM value { get; set; }
