@@ -27,9 +27,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FA.Core\FA.Core.csproj" />
-    <ProjectReference Include="..\..\FA.Data\FA.Data.csproj" />
-    <ProjectReference Include="..\..\FA.Services\FA.Services.csproj" />
+    <ProjectReference Include="..\FA.Core\FA.Core.csproj" />
+    <ProjectReference Include="..\FA.Data\FA.Data.csproj" />
+    <ProjectReference Include="..\FA.Services\FA.Services.csproj" />
   </ItemGroup>
 
 </Project>
