@@ -21,6 +21,7 @@ using Syncfusion.EJ2.Base;
 using System.IO;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using System.Text.Json;
 
 namespace FA.Web.Controllers
 {
@@ -60,18 +61,23 @@ namespace FA.Web.Controllers
             ViewBag.Freelancers = new SelectList(freelancers,"Id","Name",freelancerId);
             ViewBag.FreelancerId = freelancerId;
             ViewBag.Projects = projects;
-            ViewBag.datasource = this.generateEvents(availabilitiesVM);
             ViewBag.Availabilities = availabilitiesVM;
             //
             return View();
         }
-        public async Task<IActionResult> List([FromBody] DataManagerRequest dm)
+        public async Task<IActionResult> List(Guid freelancerId,[FromBody] DataManagerRequest dm)
         {
 
             List<Freelancer> freelancers = await _freelancerService.GetAllAsync();
-            List<Availability> availabilities = await _availabilityService.GetAvailabilitiesByFreelancerIdAsync(Guid.Empty);
+            List<Availability> availabilities = await _availabilityService.GetAvailabilitiesByFreelancerIdAsync(freelancerId);
             List<AvailabilityVM> availabilitiesVM = PrepareAvailabilityVM(availabilities);
             return Json(new { result = availabilitiesVM, count = availabilitiesVM.Count });
+        }
+        public async Task<IActionResult> Calender(Guid freelancerId)
+        {
+            List<Availability> availabilities = await _availabilityService.GetAvailabilitiesByFreelancerIdAsync(freelancerId);
+            var availabilitiesVM = PrepareAvailabilityVM(availabilities);
+            return Json(generateEvents(availabilitiesVM));
         }
         private List<EventsData> generateEvents(List<AvailabilityVM> availabilities)
         {
@@ -80,12 +86,12 @@ namespace FA.Web.Controllers
             {
                 dateCollections.Add(new EventsData()
                 {
-                    Id=item.Id,
-                    StartTime=item.StartDate,
-                    EndTime=item.EndDate,
-                    IsAllDay=true,
-                    Subject=item.Type.ToString(),
-                    CategoryColor=item.Type==AvailabilityType.Available?"green":"red",
+                    Id = item.Id,
+                    StartTime = item.StartDate,
+                    EndTime = item.EndDate,
+                    IsAllDay = true,
+                    Subject = item.Type.ToString(),
+                    CategoryColor = item.Type == AvailabilityType.Available ? "#28a745" : (item.Type==AvailabilityType.Booked? "#007bff" : "#dc3545 "),
                 });
             }
             return dateCollections;
@@ -164,14 +170,5 @@ namespace FA.Web.Controllers
         public Guid Key { get; set; }
         public string KeyColumn { get; set; }
     }
-    internal class EventsData
-    {
-        public Guid Id { get; set; }
-        public string Subject { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
-        public bool IsAllDay { get; set; }
-        public string CategoryColor { get; set; }
-        public int TaskId { get; set; }
-    }
+    
 }
