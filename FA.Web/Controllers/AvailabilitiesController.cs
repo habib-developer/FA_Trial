@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using FA.Core.Domain;
 using FA.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -12,16 +11,9 @@ using AutoMapper;
 using FA.Core.Services;
 using FA.Web.Models;
 using System.Security.Claims;
-using Syncfusion.EJ2;
-using Syncfusion;
-using Syncfusion.Data;
-using Syncfusion.Lic;
-using Syncfusion.Licensing;
 using Syncfusion.EJ2.Base;
 using System.IO;
 using Newtonsoft.Json;
-using Microsoft.AspNetCore.Http;
-using System.Text.Json;
 
 namespace FA.Web.Controllers
 {
